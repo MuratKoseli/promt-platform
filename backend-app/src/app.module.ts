@@ -7,12 +7,16 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
+import { PromptModule } from './prompt/prompt.module';
+import { PromptRunModule } from './prompt-run/prompt-run.module';
 
 @Module({
   imports: [
     PrismaModule,
     UserModule,
     AuthModule,
+    PromptModule,
+    PromptRunModule,
   ],
   controllers: [AppController],
   providers: [

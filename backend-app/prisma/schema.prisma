@@ -12,14 +12,87 @@ enum UserRole {
   ADMIN
 }
 
+enum RunStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
   passwordHash String
   role         UserRole @default(USER)
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  prompts    Prompt[]
+  promptRuns PromptRun[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+model Prompt {
+  id String @id @default(uuid())
+
+  title   String
+  content String
+
+  isPublic Boolean @default(false)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  forkedFromId String?
+  forkedFrom   Prompt?  @relation("PromptFork", fields: [forkedFromId], references: [id])
+  forks        Prompt[] @relation("PromptFork")
+
+  forkCount Int @default(0)
+  runCount  Int @default(0)
+
+  runs PromptRun[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("prompts")
+}
+
+model PromptRun {
+  id String @id @default(uuid())
+
+  promptId String
+  userId   String
+
+  model  String
+  input  String?
+  output String
+
+  status RunStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+
+  prompt Prompt @relation(fields: [promptId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  tokenUsage TokenUsage?
+
+  @@map("prompt_runs")
+}
+
+model TokenUsage {
+  id String @id @default(uuid())
+
+  promptRunId String    @unique
+  promptRun   PromptRun @relation(fields: [promptRunId], references: [id])
+
+  inputTokens  Int
+  outputTokens Int
+  totalTokens  Int
+  costUsd      Float
+
+  createdAt DateTime @default(now())
+
+  @@map("token_usages")
 }
